@@ -48,7 +48,7 @@ void UNAAnimNotifyState_ParryAreaTest::NotifyBegin(USkeletalMeshComponent* MeshC
 void UNAAnimNotifyState_ParryAreaTest::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
-
+	/*End에서 사용할경우*/
 	if (UAbilitySystemComponent* OwnerASC = MeshComp->GetOwner()->FindComponentByClass<UAbilitySystemComponent>()) 
 	{
 		UAnimInstance* AnimInstance = OwnerASC->AbilityActorInfo->GetAnimInstance();
@@ -79,9 +79,16 @@ void UNAAnimNotifyState_ParryAreaTest::NotifyTick(USkeletalMeshComponent* MeshCo
 
 		//OwnerASC->GetAllAttributes();
 		// 
-		//damage 맞았다고 대충 치고
+		//damage 맞았다고 대충 치고		++이때 패링 이펙트 파티클 같은거 보여줘서 패링 타이밍 보이게 하는것도 괜찮을거 같음
 		Check = true;
 
+		//패링 캔슬을 여기에 넣을까 END에 넣을까 고민이 좀 있긴함
+		/**/
+		if (Check)
+		{
+			AnimInstance->Montage_Stop(0.2f);
+			AnimInstance->Montage_Play(StunMontage);
+		}
 	}
 
 
