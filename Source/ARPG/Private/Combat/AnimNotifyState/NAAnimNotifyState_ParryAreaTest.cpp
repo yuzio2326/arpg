@@ -11,9 +11,52 @@ void UNAAnimNotifyState_ParryAreaTest::NotifyBegin(USkeletalMeshComponent* MeshC
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
 
+	if (MeshComp->GetWorld()->IsGameWorld())
+	{
+		if (MeshComp->GetOwner()->HasAuthority())
+		{
+			const TScriptInterface<IAbilitySystemInterface>& SourceInterface = MeshComp->GetOwner();
+
+			if (!SourceInterface)
+			{
+				// GAS가 없는 객체로부터 시도됨
+				check(false);
+				return;
+			}
+
+			const FVector SocketLocation = MeshComp->GetSocketLocation(SocketName);
+
+			ContextHandle = SourceInterface->GetAbilitySystemComponent()->MakeEffectContext();
+			ContextHandle.AddOrigin(SocketLocation);
+			ContextHandle.AddInstigator(MeshComp->GetOwner()->GetInstigatorController(), MeshComp->GetOwner());
+			ContextHandle.SetAbility(SourceInterface->GetAbilitySystemComponent()->GetAnimatingAbility());
+			ContextHandle.AddSourceObject(this);
+
+			SpecHandle = SourceInterface->GetAbilitySystemComponent()->MakeOutgoingSpec(UNAGE_Damage::StaticClass(), 1.f, ContextHandle);
+		}
+
+		// 서버와 클라이언트 간 플레이어 컨트롤러 설정 동기화
+		if (MeshComp->GetOwner()->GetComponentByClass<UCharacterMovementComponent>())
+		{
+			MeshComp->GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->bUseControllerDesiredRotation = false;
+			MeshComp->GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->StopMovementImmediately();
+			MeshComp->GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->DisableMovement();
+		}
+		else if (MeshComp->GetOwner()->GetComponentByClass<UPawnMovementComponent>())
+		{
+			//MeshComp->GetOwner()->GetComponentByClass<UPawnMovementComponent>()->bUseControllerDesiredRotation = false;
+			MeshComp->GetOwner()->GetComponentByClass<UPawnMovementComponent>()->StopMovementImmediately();
+			//MeshComp->GetOwner()->GetComponentByClass<UPawnMovementComponent>()->DisableMovement();
+		}
+
+	}
+
+
 	AActor* OwnerActor =  MeshComp->GetOwner();
 
 	// For EditorPlay AnimSequence
+	// 구체 붙이고
+
 #if WITH_EDITOR
 	if (GIsEditor && OwnerActor && OwnerActor->GetWorld() != GWorld) { return; }
 #endif
@@ -56,6 +99,8 @@ void UNAAnimNotifyState_ParryAreaTest::NotifyEnd(USkeletalMeshComponent* MeshCom
 		{
 			AnimInstance->Montage_Stop(0.2f);
 			AnimInstance->Montage_Play(StunMontage);
+
+			
 		}
 
 	}
@@ -71,6 +116,9 @@ void UNAAnimNotifyState_ParryAreaTest::NotifyTick(USkeletalMeshComponent* MeshCo
 	{
 		UAnimInstance* AnimInstance = OwnerASC->AbilityActorInfo->GetAnimInstance();
 
+		//GetAnimatingAbility로 player animability 가져오기
+		OwnerASC->GetAnimatingAbility();
+
 		OwnerASC->GetCurrentMontage();
 
 		const UNAAttributeSet* AttributeSet = Cast<UNAAttributeSet>(OwnerASC->GetAttributeSet(UNAAttributeSet::StaticClass()));
@@ -84,11 +132,11 @@ void UNAAnimNotifyState_ParryAreaTest::NotifyTick(USkeletalMeshComponent* MeshCo
 
 		//패링 캔슬을 여기에 넣을까 END에 넣을까 고민이 좀 있긴함
 		/**/
-		if (Check)
-		{
-			AnimInstance->Montage_Stop(0.2f);
-			AnimInstance->Montage_Play(StunMontage);
-		}
+		//if (Check)
+		//{
+		//	AnimInstance->Montage_Stop(0.2f);
+		//	AnimInstance->Montage_Play(StunMontage);
+		//}
 	}
 
 

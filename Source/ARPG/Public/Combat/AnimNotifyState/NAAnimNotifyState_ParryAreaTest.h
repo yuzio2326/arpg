@@ -23,6 +23,23 @@ class ARPG_API UNAAnimNotifyState_ParryAreaTest : public UAnimNotifyState
 
 	bool Check;
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Montage")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Overlap", meta = (AllowPrivateAccess = "true"))
+	float OverlapInterval = 0.25f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Overlap", meta = (AllowPrivateAccess = "true"))
+	FName SocketName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Overlap", meta = (AllowPrivateAccess = "true"))
+	float SphereRadius = 20.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* StunMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound", meta = (AllowPrivateAccess = "true"))
+	USoundBase* ParrySound = nullptr;
+
+	FGameplayEffectContextHandle ContextHandle;
+
+	FGameplayEffectSpecHandle SpecHandle;
+
 };
