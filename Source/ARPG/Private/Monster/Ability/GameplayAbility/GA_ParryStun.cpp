@@ -12,9 +12,5 @@ void UGA_ParryStun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 			EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 			return;
 		}
-
-
-
-
 	}
 }
