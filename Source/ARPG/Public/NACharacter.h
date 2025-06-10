@@ -73,6 +73,9 @@ class ANACharacter : public ACharacter, public IAbilitySystemInterface, public I
 	UInputAction* LeftMouseAttackAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* RightMouseAttackAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* ReviveAction;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Asset", meta=(AllowPrivateAccess="true"))
@@ -111,6 +114,8 @@ class ANACharacter : public ACharacter, public IAbilitySystemInterface, public I
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category = "Combat", meta=(AllowPrivateAccess="true"))
 	UNAMontageCombatComponent* DefaultCombatComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category = "AnimInstance", meta = (AllowPrivateAccess = "true"))
+	bool IsZoom;
 public:
 	ANACharacter();
 	virtual void OnConstruction(const FTransform& Transform) override;
@@ -146,6 +151,12 @@ protected:
 	// Inventory Input
 	UFUNCTION()
 	void ToggleInventoryWidget();
+
+	// 오른쪽 클릭으로 줌인 
+	UFUNCTION()
+	void ZoomIn();
+
+	void Zoomcheck();
 	
 	void ChangeCameraAngle(USpringArmComponent* NewBoom, float OverTime);
 	

@@ -54,3 +54,35 @@ public:
 
 
 };
+
+// Item 및 Monster 가 사용할 Projectile
+USTRUCT()
+struct FProjectileTableRow : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	// 만들어야 하네?
+public:
+	//UPROPERTY(EditAnywhere, Category = "Projectile")
+	//TSubclassOf<AProjectile> ProjectileClass;
+
+public:
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	UStaticMesh* StaticMesh = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	FTransform Transform = FTransform::Identity;
+
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	float InitialSpeed = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	float MaxSpeed = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	float InitialLifeSpan = 5;
+
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	float Damage = 0;
+
+};

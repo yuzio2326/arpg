@@ -39,22 +39,25 @@ void UNACombatComponent::SetAttackAbility(const TSubclassOf<UGameplayAbility>& I
 	AttackAbility = InAbility;
 }
 
-void UNACombatComponent::SetGrabAbility(const TSubclassOf<UGameplayAbility>& InAbility)
+void UNACombatComponent::SetZoomAbility(const TSubclassOf<UGameplayAbility>& InAbility)
 {
+	// GetAttacker는 동일 하니까 여기에서 그대로 냅두고
 	if (const TScriptInterface<IAbilitySystemInterface>& Interface = GetAttacker())
 	{
-		if (AbilitySpecHandle.IsValid() && GetNetMode() != NM_Client)
-		{
-			Interface->GetAbilitySystemComponent()->ClearAbility(AbilitySpecHandle);
-		}
+		//서버에서 능력 제거		
+		//if (AbilitySpecHandle.IsValid() && GetNetMode() != NM_Client)
+		//{
+		//	Interface->GetAbilitySystemComponent()->ClearAbility(AbilitySpecHandle);
+		//}
 
+		//서버에서 새로운 능력을 부여
 		if (InAbility && GetNetMode() != NM_Client)
 		{
 			AbilitySpecHandle = Interface->GetAbilitySystemComponent()->GiveAbility(InAbility);
 		}
 	}
 
-	GrabAbility = InAbility;
+	ZoomAbility = InAbility;
 }
 
 void UNACombatComponent::ReplayAttack()
@@ -134,6 +137,37 @@ void UNACombatComponent::SetAttack(const bool NewAttack)
 	UE_LOG(LogCombatComponent, Log, TEXT("%hs: Attack from %d to %d by %d"), __FUNCTION__, bAttacking, NewAttack, GetNetMode());
 	bAttacking = NewAttack;
 	
+	if (GetNetMode() == NM_Client)
+	{
+		// 클라이언트일 경우 서버와 동기화 요청
+		Server_SetAttack(bAttacking);
+	}
+	else if (GetNetMode() == NM_Standalone)
+	{
+		// 로컬 플레이일 경우 후처리 수행
+		PostSetAttack();
+	}
+	else
+	{
+		// 서버에서 발생한 경우 클라이언트와 동기화
+		Client_SyncAttack(bAttacking);
+		PostSetAttack();
+	}
+}
+
+void UNACombatComponent::SetZooming(bool NewZoom)
+{
+	// 줌 상태가 안바뀌었을 경우
+	if (bZooming == NewZoom)
+	{
+		return;
+	}
+	if(!ZoomAbility)
+	{
+		UE_LOG(LogCombatComponent, Log, TEXT("ZoomAbility is null"));
+		return;
+	}
+
 	if (GetNetMode() == NM_Client)
 	{
 		// 클라이언트일 경우 서버와 동기화 요청
@@ -332,6 +366,11 @@ void UNACombatComponent::SetConsiderChildActor(const bool InConsiderChildActor)
 TSubclassOf<UGameplayAbility> UNACombatComponent::GetAttackAbility() const
 {
 	return AttackAbility;
+}
+
+void UNACombatComponent::Server_RequestZoom_Implementation()
+{
+	SetZoomAbility(ZoomAbility);
 }
 
 void UNACombatComponent::Server_RequestAttackAbility_Implementation()

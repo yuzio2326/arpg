@@ -34,6 +34,9 @@ class ARPG_API UNACombatComponent : public UActorComponent
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_CanAttack, meta=(AllowPrivateAccess="true"))
 	bool bCanGrab = false;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_CanAttack, meta = (AllowPrivateAccess = "true"))
+	bool bZooming = false;
+
 	// 공격을 시전하는 객체가 부모 객체인가?
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(AllowPrivateAccess="true"))
 	bool bConsiderChildActor = false;
@@ -50,6 +53,9 @@ class ARPG_API UNACombatComponent : public UActorComponent
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(AllowPrivateAccess="true"))
 	TSubclassOf<UGameplayAbility> GrabAbility;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(AllowPrivateAccess="true"))
+	TSubclassOf<UGameplayAbility> ZoomAbility;
 
 	FGameplayAbilitySpecHandle AbilitySpecHandle;
 
@@ -69,7 +75,8 @@ public:
 
 	void SetAttackAbility(const TSubclassOf<UGameplayAbility>& InAbility);
 
-	void SetGrabAbility(const TSubclassOf<UGameplayAbility>& InAbility);
+	// 결국에는 AttackAbility 사용하고 있음
+	void SetZoomAbility(const TSubclassOf<UGameplayAbility>& InAbility);
 	
 
 	UFUNCTION()
@@ -99,7 +106,10 @@ protected:
 
 	UFUNCTION( Server, Reliable )
 	void Server_RequestAttackAbility();
-	
+
+	UFUNCTION(Server, Reliable)
+	void Server_RequestZoom();
+
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
@@ -110,8 +120,21 @@ protected:
 	// 공격 상태로 변환하는 함수
 	void SetAttack(bool NewAttack);
 
+	// 서버에 zoom 던저주는 작업
+	void SetZooming(bool NewZoom);
+
 	// 공격 값이 바뀌고 난 후 수행할 작업
 	virtual void PostSetAttack();
+
+	// 줌 상태 클라이언트 -> 서버 상태 업데이트 요청
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_SetZoom(const bool NewAttack);
+	//Server_SetZoom_Implementation 만들어야함
+
+	// 줌 상태 서버 -> 클라이언트 강제 업데이트
+	UFUNCTION(Server, Reliable)
+	void Client_SyncZoom(const bool NewFire);
+	//Client_SyncZoom_Implementation 만들어야함
 
 	// 공격 상태 클라이언트 -> 서버 상태 업데이트 요청
 	UFUNCTION(Server, Reliable, WithValidation)

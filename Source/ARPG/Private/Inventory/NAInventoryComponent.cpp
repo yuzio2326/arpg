@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Inventory/NAInventoryComponent.h"
@@ -824,7 +824,7 @@ void UNAInventoryComponent::InitWidget()
 		if (UNAInventoryWidget* InventoryWidget = Cast<UNAInventoryWidget>(GetWidget()))
 		{
 			const bool bSucceed = InventoryWidget->MapSlotIDAndUIButton(SlotButtons);
-			ensureAlwaysMsgf(bSucceed, TEXT("[UNAInventoryComponent::InitWidget]  인벤토리 슬롯 & UI 매핑 실패"));
+			//ensureAlwaysMsgf(bSucceed, TEXT("[UNAInventoryComponent::InitWidget]  인벤토리 슬롯 & UI 매핑 실패"));
 		}
 	}
 }

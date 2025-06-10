@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "ARPG/Public/NAPlayerState.h"
@@ -59,6 +59,19 @@ bool ANAPlayerState::IsKnockDown() const
 	}
 
 	check( false );
+	return false;
+}
+
+bool ANAPlayerState::IsZoom() const
+{
+	//
+	//if (const ANACharacter* Character = Cast<ANACharacter>(GetPawn()))
+	//{
+	//	const ECharacterStatus CharacterStatus = Character->GetComponentByClass<UNAVitalCheckComponent>()->GetCharacterStatus();
+	//	
+	//}
+
+	//check(false);
 	return false;
 }
 

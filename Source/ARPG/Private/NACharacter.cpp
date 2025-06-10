@@ -24,6 +24,7 @@
 #include "Interaction/NAInteractionComponent.h"
 #include "Inventory/NAInventoryComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "DefaultAnimInstance.h"
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -274,7 +275,9 @@ void ANACharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		EnhancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &ANACharacter::ToggleInventoryWidget);
 
 		// Grab			TryInteract에서 cast 된 대상이 monster일 경우 활성화 시키면 될거 같음
-		EnhancedInputComponent->BindAction(GrabAction, ETriggerEvent::Started, this, &ANACharacter::TryInteract);
+		//EnhancedInputComponent->BindAction(GrabAction, ETriggerEvent::Started, this, &ANACharacter::TryInteract);
+		EnhancedInputComponent->BindAction(RightMouseAttackAction, ETriggerEvent::Started, this, &ANACharacter::ZoomIn);
+
 
 	}
 	else
@@ -455,6 +458,63 @@ void ANACharacter::ToggleInventoryWidget()
 	}
 }
 
+void ANACharacter::ZoomIn()
+{		
+	UDefaultAnimInstance* PlayerAniminstance = Cast<UDefaultAnimInstance>(GetMesh()->GetAnimInstance());
+
+	bool boolCheck = false;
+
+	//리슨서버 호스트에서 작동
+	if (HasAuthority())
+	{
+		bool ReceiveServer = true;
+
+		if (!IsZoom)
+		{
+			//Zoom 상태 돌입
+			//GetMesh()->SetOwnerNoSee(true);
+			FollowCamera->AddRelativeLocation(FVector(200, 0, 30));
+			IsZoom = true;
+			bUseControllerRotationYaw = true;
+		}
+		else if (IsZoom)
+		{
+			//GetMesh()->SetOwnerNoSee(false);
+			FollowCamera->AddRelativeLocation(FVector(-200, 0, -30));
+			IsZoom = false;
+			bUseControllerRotationYaw = false;
+		}
+	}
+	// 클라에서 작동
+	else
+	{
+		//ServerZoomIn(); // 클라이언트에서 서버로 요청
+		bool SendToServer = true;
+
+		if (!IsZoom)
+		{
+			//Zoom 상태 돌입
+			//GetMesh()->SetOwnerNoSee(true);
+			FollowCamera->AddRelativeLocation(FVector(200, 0, 30));
+			IsZoom = true;
+			bUseControllerRotationYaw = true;
+		}
+		else if (IsZoom)
+		{
+			//GetMesh()->SetOwnerNoSee(false);
+			FollowCamera->AddRelativeLocation(FVector(-200, 0, -30));
+			IsZoom = false;
+			bUseControllerRotationYaw = false;
+		}
+	}
+
+	//아이템 열었을때 줌 못하도록 하기
+	//Changed Pressed
+	//UpperBody 사용하도록 바꿔야함 + 상체 고정 필요
+	
+	
+}
+
 void ANACharacter::ChangeCameraAngle(USpringArmComponent* NewBoom, float OverTime)
 {
 	if (NewBoom)
@@ -497,4 +557,5 @@ void ANACharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME( ANACharacter, AbilitySystemComponent );
 	DOREPLIFETIME( ANACharacter, DefaultCombatComponent );
+	DOREPLIFETIME( ANACharacter, IsZoom);
 }

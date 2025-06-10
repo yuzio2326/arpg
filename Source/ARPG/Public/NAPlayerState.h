@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -31,6 +31,10 @@ public:
 	
 	// 녹다운 상태 반환
 	bool IsKnockDown() const;
+
+	// Zoom 상태 반환
+	bool IsZoom() const;
+
 	// ============================
 
 	// 빙의한 Pawn의 에셋 이름 반환
