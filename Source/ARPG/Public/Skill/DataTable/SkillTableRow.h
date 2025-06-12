@@ -54,3 +54,31 @@ public:
 
 
 };
+
+USTRUCT()
+struct FProjectileTable : public FTableRowBase
+{
+	GENERATED_BODY()
+public:
+	//AActor 를 Projectile class 로 바꿔주세요
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	TSubclassOf<AActor> ProjectileClass;
+
+	UPROPERTY(EditAnywhere)
+	UStaticMesh* StaticMesh;
+
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	FTransform Transform;
+
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	float Damage = 10;
+
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	float Speed = 0;
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	float ProjectileGravityScale;
+
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	float InitialLifeSpan = 5;
+
+};
