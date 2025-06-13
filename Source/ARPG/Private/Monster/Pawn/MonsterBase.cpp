@@ -12,6 +12,7 @@
 #include "Monster/Ability/GameplayAbility/GA_MonsterAttack.h"
 #include "Monster/Ability/GameplayAbility/GA_Spawning.h"
 #include "Monster/Ability/GameplayAbility/GA_UseSkill.h"
+#include "Monster/Ability/GameplayAbility/NAGA_Death.h"
 #include "GameplayEffectExtension.h"
 
 #include "Combat/ActorComponent/NAMontageCombatComponent.h"
@@ -117,6 +118,7 @@ void AMonsterBase::BeginPlay()
 		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UGA_MonsterAttack::StaticClass(), 1, 0));
 		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UGA_Spawning::StaticClass(), 1, 0));
 		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UGA_UseSkill::StaticClass(), 1, 0));
+		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UNAGA_Death::StaticClass(), 1, 0));
 
 	}
 
@@ -203,7 +205,11 @@ float AMonsterBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 
 void AMonsterBase::OnDie()
 {
+	if (HasAuthority())
+	{
 
+		Destroy();
+	}
 }
 
 void AMonsterBase::initializeAttribute(const FOnAttributeChangeData& Data)
@@ -271,6 +277,11 @@ void AMonsterBase::Tick(float DeltaTime)
 	if (AbilitySystemComponent)
 	{
 		float m_fHealth = Cast<UNAAttributeSet>(AbilitySystemComponent->GetAttributeSet(UNAAttributeSet::StaticClass()))->GetHealth();
+		if (m_fHealth <= 0)
+		{
+			OnHealthDepleted();
+		}
+
 		bool check = false;
 	}
 

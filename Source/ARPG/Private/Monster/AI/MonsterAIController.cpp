@@ -10,7 +10,7 @@
 #include "Ability/GameplayAbility/AttackGameplayAbility.h"
 #include "Skill/DataTable/SkillTableRow.h"
 #include "Ability/AttributeSet/NAAttributeSet.h"
-
+#include "Kismet/KismetSystemLibrary.h"
 
 void AMonsterAIController::BeginPlay()
 {
@@ -56,8 +56,13 @@ void AMonsterAIController::OnPossess(APawn* InPawn)
 void AMonsterAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	CheckHP();
+
 	LookTarget();
-	
+	// 확인용
+	Blackboard->SetValueAsBool(TEXT("LookPlayer"), LookOnTarget);
+
 	//Montage play중이면 이동 멈추는거
 	IsPlayingMontage();
 	//Player 찾기
@@ -81,6 +86,9 @@ void AMonsterAIController::Tick(float DeltaTime)
 		UseSkill();
 	}
 	
+	changeSkillTime -= DeltaTime;
+	
+
 	// 로아식 ai 
 	// 스킬을 선택하고 선택한 스킬의 사거리 까지 다가온뒤 스킬을 시전하는 형식 -> 체력이 일정량 이하로 떨어지면 기믹 패턴 수행
 	
@@ -246,6 +254,8 @@ void AMonsterAIController::SelectSkill()
 				// 이제 스킬이 세팅되서 사용이 가능해
 				Blackboard->SetValueAsFloat(TEXT("SkillDistance"), SkillRange);			
 				Blackboard->SetValueAsBool(TEXT("SelectedSkill"), true);
+				changeSkillTime = 5.f;
+
 			}
 		}
 	}
@@ -259,6 +269,10 @@ void AMonsterAIController::UseSkill()
 		float SkillDistance = Blackboard->GetValueAsFloat(TEXT("SkillDistance"));
 		float PlayerDistance = Blackboard->GetValueAsFloat(TEXT("PlayerDistance"));
 		
+
+		
+
+		bool m_ChangeSkill = false;
 		//skill 사거리 내에 들어왔을때 사용
 		if (PlayerDistance < SkillDistance && LookOnTarget)
 		{
@@ -283,7 +297,17 @@ void AMonsterAIController::UseSkill()
 		// 사거리 밖일때
 		else if (PlayerDistance > SkillDistance)
 		{
-			Blackboard->SetValueAsBool(TEXT("CanUseSkill"), false);
+			Blackboard->SetValueAsBool(TEXT("CanUseSkill"), false);		
+			if (changeSkillTime < 0)
+			{
+				SelectSkill();
+
+				// 어그로 변경
+				if (Blackboard->GetValueAsObject(TEXT("LastDamageInstigator")))
+				{
+					Blackboard->SetValueAsObject(TEXT("DetectPlayer"), Blackboard->GetValueAsObject(TEXT("LastDamageInstigator")));
+				}
+			}
 		}
 
 
@@ -321,10 +345,11 @@ void AMonsterAIController::LookTarget()
 			if (!Blackboard->GetValueAsBool(TEXT("MontagePlaying")))
 			{
 				// 대상을 바라보고 있지 않으면
-				if (LookAngle < 0.9)
+				if (LookAngle < 0.89)
 				{
-					SetFocus(DetectedPlayerActor);	
 					LookOnTarget = false;
+					SetFocus(DetectedPlayerActor);	
+
 				}
 				else
 				{		
@@ -352,4 +377,14 @@ void AMonsterAIController::OnAttack()
 
 
 
+}
+
+void AMonsterAIController::CheckHP()
+{
+	if (AMonsterBase* OwnerMonster = Cast<AMonsterBase>(GetPawn()))
+	{
+		UAbilitySystemComponent* MonsterASC = OwnerMonster->GetAbilitySystemComponent();
+		float m_fHealth = Cast<UNAAttributeSet>(MonsterASC->GetAttributeSet(UNAAttributeSet::StaticClass()))->GetHealth();
+		Blackboard->SetValueAsFloat(TEXT("HP"), m_fHealth);
+	}
 }

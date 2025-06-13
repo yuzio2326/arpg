@@ -85,6 +85,7 @@ public:
 	UAnimMontage* GetAttackMontage() const { return TestAttackMontage; }
 	TArray<UAnimMontage*> GetAttackMontageCombo() const { return AttackComboMontage; }
 	UAnimMontage* GetSpawnMontage() const { return SpawnMontage; }
+	UAnimMontage* GetDeathMontage() const { return DeathMontage; }
 
 	FDataTableRowHandle GetSkillData() const { return OwnSkills; }
 	int GetComboState() const { return SelectedCombo; }
@@ -134,6 +135,8 @@ public:
 	UAnimMontage* SpawnMontage;
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* CurrentSkillMontage;
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* DeathMontage;
 
 	UPROPERTY(EditAnywhere, meta = (RowType = "/Script/ARPG.OwnSkillTable"))
 	FDataTableRowHandle OwnSkills;

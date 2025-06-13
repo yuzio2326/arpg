@@ -35,12 +35,13 @@ protected:
 	void IsPlayingMontage();
 
 	void SelectSkill();
-
-
+		
 	void OnAttack();
 
+	void CheckHP();
+		
 	bool LookOnTarget = false;
-
+	float changeSkillTime = 0;
 public:
 	void UseSkill();
 
