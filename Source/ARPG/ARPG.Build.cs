@@ -21,8 +21,9 @@ public class ARPG : ModuleRules
 			"GameplayTasks",
 			"AIModule",
 			"GeometryCollectionEngine",
-			"Niagara"
-		});
+			"Niagara",
+            "NavigationSystem"
+        });
 		
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{

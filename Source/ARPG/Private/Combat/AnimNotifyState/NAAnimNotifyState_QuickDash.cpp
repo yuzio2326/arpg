@@ -10,6 +10,7 @@
 #include "HP/GameplayEffect/NAGE_Damage.h"
 #include "NACharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "NavigationSystem.h"
 
 
 void UNAAnimNotifyState_QuickDash::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
@@ -245,21 +246,47 @@ void UNAAnimNotifyState_QuickDash::LaunchTarget(USkeletalMeshComponent* MeshComp
 {
 	if (APawn* OwnerPawn = Cast<APawn>(MeshComp->GetOwner()))
 	{
-		if (UPawnMovementComponent* Movement = OwnerPawn->FindComponentByClass<UPawnMovementComponent>())
-		{
-			FVector FinalVel = LaunchVelocity;
-			const FVector Velocity = Movement->Velocity;
+		// Nav mesh 검사 과정
+		const FNavAgentProperties& AgentProps = OwnerPawn->GetNavAgentPropertiesRef();
+		const float SearchRad = AgentProps.AgentRadius * 2.f;
+		FVector ForwardVec = MeshComp->GetOwner()->GetActorForwardVector();
+		const FVector Start = OwnerPawn->GetActorLocation() + ForwardVec * SearchRad;
+		const FVector End = Start-FVector(0,0,-100);
 
-			if (!bXYOverride)
+		FNavLocation NavLocation;
+		FColor LineColor = FColor::Red;
+
+		bool bOnNavMesh = UNavigationSystemV1::GetCurrent(MeshComp->GetWorld())->ProjectPointToNavigation(
+			Start,
+			NavLocation,
+			FVector(50.f, 50.f, 500.f)
+		);
+
+		// navmesh 가 있을때만 앞으로 돌진하도록 처리
+		if (bOnNavMesh)
+		{
+			if (UPawnMovementComponent* Movement = OwnerPawn->FindComponentByClass<UPawnMovementComponent>())
 			{
-				FinalVel.X += Velocity.X;
-				FinalVel.Y += Velocity.Y;
+				FVector FinalVel = LaunchVelocity;
+				const FVector Velocity = Movement->Velocity;
+				if (!bXYOverride)
+				{
+					FinalVel.X += Velocity.X;
+					FinalVel.Y += Velocity.Y;
+				}
+				if (!bZOverride)
+				{
+					FinalVel.Z += Velocity.Z;
+				}
+				Movement->Velocity = FinalVel;
 			}
-			if (!bZOverride)
-			{
-				FinalVel.Z += Velocity.Z;
-			}
-			Movement->Velocity = FinalVel;
 		}
+		else
+		{
+			LineColor = FColor::Yellow;
+		}
+
+		DrawDebugLine(MeshComp->GetWorld(), Start, End, LineColor, false, 3.f, 0, 10.f);
+			
 	}
 }

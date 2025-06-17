@@ -53,5 +53,11 @@ class ARPG_API UNAAnimNotifyState_QuickDash : public UAnimNotifyState
 	FGameplayEffectContextHandle ContextHandle;
 
 	FGameplayEffectSpecHandle SpecHandle;
+
+	UPROPERTY(Transient,DuplicateTransient)
+	TObjectPtr<AActor> OwnerActor;
+
+
+
 	
 };
