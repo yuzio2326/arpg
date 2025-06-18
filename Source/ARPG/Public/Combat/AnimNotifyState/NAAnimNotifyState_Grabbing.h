@@ -58,4 +58,7 @@ public:
 
 	FGameplayEffectSpecHandle SpecHandle;
 
+	//Grab 중인 대상과 아닌 대상의 controller 는 다르니까 이걸로 구분 ㄱ
+	AController* CheckOtherController;
+
 };

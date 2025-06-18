@@ -30,9 +30,12 @@ public:
 	float OverlapInterval = 0.01f;
 	float OverlapElapsed;
 
-	//당할때 Player가 있어야 하는 Socket
+	// 잡기 성공 여부로 넣을 collider
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Overlap", meta = (AllowPrivateAccess = "true"))
 	FName SocketName;
+	//당할때 Player가 있어야 하는 Socket
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Overlap", meta = (AllowPrivateAccess = "true"))
+	FName OffsetName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Overlap", meta = (AllowPrivateAccess = "true"))
 	float SphereRadius = 20.f;
