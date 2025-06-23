@@ -66,10 +66,12 @@ protected:
 	//virtual bool OnAttack();
 
 	//Take damage Parts
-	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	//virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	void TakeDamageStun(float HP, UAnimMontage* TakeDamageMontage, float StunSpeed);
 
 	UFUNCTION()
 	virtual void OnDie();
+	void BodySlash();
 
 	void DropItem(const FDataTableRowHandle& InDataTableRowHandle);
 
@@ -145,6 +147,8 @@ public:
 	UAnimMontage* DeathMontage;
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* SuplexedMontage;
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* DamageMontage;
 
 	UPROPERTY(EditAnywhere, meta = (RowType = "/Script/ARPG.OwnSkillTable"))
 	FDataTableRowHandle OwnSkills;

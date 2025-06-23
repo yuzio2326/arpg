@@ -110,11 +110,21 @@ void UNAAnimNotifyState_ParryAreaTest::NotifyEnd(USkeletalMeshComponent* MeshCom
 						const TScriptInterface<IAbilitySystemInterface>& SourceInterface = MeshComp->GetOwner();
 						
 						UAbilitySystemComponent* PlayerASC = Player->GetAbilitySystemComponent();
-						SourceInterface->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget
-							(
-								*SpecHandle.Data.Get(),
-								PlayerASC
-							);				
+						float HP = Cast<UNAAttributeSet>(PlayerASC->GetAttributeSet(UNAAttributeSet::StaticClass()))->GetHealth();
+						FGameplayTag SuplexTag = FGameplayTag::RequestGameplayTag("Player.Status.Suplex");
+						//PlayerASC로 이미 플레이어로 고정해서 몬스터끼리 데미지는 주지 않는다
+						//suplex 중이 아닐때만 데미지를 입히도록 한다
+						if (!PlayerASC->HasMatchingGameplayTag(SuplexTag))
+						{
+							SourceInterface->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget
+								(
+									*SpecHandle.Data.Get(),
+									PlayerASC
+								);				
+						}
+						float HP2 = Cast<UNAAttributeSet>(PlayerASC->GetAttributeSet(UNAAttributeSet::StaticClass()))->GetHealth();
+						bool check = false;
+
 					}
 				}
 
@@ -212,8 +222,14 @@ void UNAAnimNotifyState_ParryAreaTest::NotifyTick(USkeletalMeshComponent* MeshCo
 							//	상대 공격에 맞지 않아도 공격한 상태면 패링이 되는 문제가 있음 -> 이건 어떻게 해야할까?...
 							//	생대 mesh와 owner mesh의 각도를 구해서 가져온뒤에 일정 각도 이하로 설정 ㄱ
 							// 30도 이하 + 공격중 + 대상과의 거리 230 이하
-							if (Dist < 230 && PlayerCombatComponent->IsAttacking() && ParryAngle < -0.85) { SuccessParry = true; }
-							else{ SuccessParry = false; }
+							if (Dist < 230 && PlayerCombatComponent->IsAttacking() && ParryAngle < -0.85)
+							{ 
+								SuccessParry = true; 
+							}
+							else
+							{ 
+								SuccessParry = false; 
+							}
 
 						}					
 					}			

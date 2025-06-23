@@ -7,8 +7,6 @@
 
 UNAGE_Suplex::UNAGE_Suplex()
 {
-
-	// Helping 태그
 	TargetTagsGameplayEffectComponent = CreateDefaultSubobject<UTargetTagsGameplayEffectComponent>("TargetTagsGameplayEffectComponent");
 	GEComponents.AddUnique(TargetTagsGameplayEffectComponent);
 

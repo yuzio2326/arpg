@@ -7,6 +7,7 @@
 #include "NAGE_Suplex.generated.h"
 
 class UAssetTagsGameplayEffectComponent;
+class UTargetTagsGameplayEffectComponent;
 /**
  * 
  */

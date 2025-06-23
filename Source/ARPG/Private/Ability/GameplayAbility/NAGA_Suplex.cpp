@@ -16,6 +16,7 @@ UNAGA_Suplex::UNAGA_Suplex()
 {
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateYes;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::ServerInitiated;
+	ActivationOwnedTags.AddTag(FGameplayTag::RequestGameplayTag("Player.Status.Suplex"));
 
 }
 
@@ -43,6 +44,7 @@ void UNAGA_Suplex::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 			//);
 
 			// Camera Action도 넣고 싶어지네 뭔가..
+			ASC;
 			ACharacter* Character = Cast<ACharacter>(ActorInfo->AvatarActor);
 			Character->GetCharacterMovement()->DisableMovement();
 			UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
@@ -130,4 +132,8 @@ void UNAGA_Suplex::OnMontageFinished()
 
 
 	}
+}
+
+void UNAGA_Suplex::IgnoreDamage(FGameplayTag GameplayTag, int Count)
+{
 }

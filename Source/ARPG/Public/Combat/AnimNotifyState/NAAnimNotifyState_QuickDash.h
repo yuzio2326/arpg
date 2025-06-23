@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayEffectTypes.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
 #include "NAAnimNotifyState_QuickDash.generated.h"
 

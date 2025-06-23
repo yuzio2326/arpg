@@ -15,9 +15,9 @@
 #include "Monster/Ability/GameplayAbility/NAGA_Death.h"
 #include "Ability/GameplayAbility/NAGA_Suplexed.h"
 #include "GameplayEffectExtension.h"
-
+#include "PhysicsEngine/PhysicsAsset.h"
 #include "Combat/ActorComponent/NAMontageCombatComponent.h"
-
+#include "GeometryCollection/GeometryCollectionComponent.h"
 #include "HP/GameplayEffect/NAGE_Damage.h"
 #include "Monster/DataTable/MonsterOwnTableRow.h"
 #include "Item/ItemDataStructs/NAItemBaseDataStructs.h"
@@ -115,13 +115,17 @@ void AMonsterBase::BeginPlay()
 	//TSubclassOf<AAIController> MainAIControllerClass = AMonsterAIController::StaticClass();
 	//AIControllerClass = MainAIControllerClass;
 
-	if (AbilitySystemComponent) 
+	if (HasAuthority())
 	{
-		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UGA_MonsterAttack::StaticClass(), 1, 0));
-		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UGA_Spawning::StaticClass(), 1, 0));
-		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UGA_UseSkill::StaticClass(), 1, 0));
-		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UNAGA_Death::StaticClass(), 1, 0));
-		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UNAGA_Suplexed::StaticClass(), 1, 0));
+		if (AbilitySystemComponent) 
+		{
+			AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UGA_MonsterAttack::StaticClass(), 1, 0));
+			AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UGA_Spawning::StaticClass(), 1, 0));
+			AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UGA_UseSkill::StaticClass(), 1, 0));
+			AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UNAGA_Death::StaticClass(), 1, 0));
+			AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UNAGA_Suplexed::StaticClass(), 1, 0));
+		}
+
 	}
 
 }
@@ -132,11 +136,13 @@ void AMonsterBase::SetAttributeData(const FDataTableRowHandle& InDataTableRowHan
 	if (FMonsterOwnTable* Data = InDataTableRowHandle.GetRow<FMonsterOwnTable>(TEXT("MonsterStatData")))
 	{
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(UNAAttributeSet::GetHealthAttribute()).AddUObject(this, &AMonsterBase::initializeAttribute);
-		
+
+		// Damage 관련은 UNAAttributeSet애 없음으로 새로 만들거나 여기에 만들어 놓은 BaseDamage를 GAS 가 가져갈수 있도록 처리할 필요가 있음
 		AbilitySystemComponent->SetNumericAttributeBase(UNAAttributeSet::GetMaxHealthAttribute(), Data->MaxHealth);
 		AbilitySystemComponent->SetNumericAttributeBase(UNAAttributeSet::GetHealthAttribute(), Data->Health);
 		AbilitySystemComponent->SetNumericAttributeBase(UNAAttributeSet::GetMovementSpeedAttribute(), Data->MovementSpeed);
 		MovementComponent->MaxSpeed = Data->MovementSpeed;
+
 		BaseDamage = Data->BaseDamaage;
 	}
 	// Failed
@@ -144,7 +150,7 @@ void AMonsterBase::SetAttributeData(const FDataTableRowHandle& InDataTableRowHan
 	{
 		//DataTable을 만들어 주세요
 		Data = nullptr;
-
+		UE_LOG(LogTemp, Log, TEXT("Please Create Monster Stat DataTable"));
 	}
 
 
@@ -166,44 +172,24 @@ void AMonsterBase::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& O
 //}
 #pragma endregion
 
-float AMonsterBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+//float AMonsterBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+//{
+//
+//	if (Controller)
+//	{
+//		//damage 맞을때 멈칫하려고 하지 않는다면 해당 부분은 delete해주세요
+//		Controller->StopMovement();
+//	}
+//
+//	return 0.0f;
+//}
+
+void AMonsterBase::TakeDamageStun(float HP, UAnimMontage* TakeDamageMontage, float StunSpeed)
 {
-	//there is no Status Part so Skip Status Parts
-	//TODO:: After Create Status Data or Components  Plz Add Here
-	
-	//if (StatusComponent->IsDie()) { return 0.f; }
-
-
-	//float DamageResult = StatusComponent->TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-	//if (FMath::IsNearlyZero(DamageResult)) { return 0.0; }
-
-	if (Controller)
+	if (HasAuthority())
 	{
-		//damage 맞을때 멈칫하려고 하지 않는다면 해당 부분은 delete해주세요
-		Controller->StopMovement();
+
 	}
-	/*TODO:: Afeter Create StatusComponent */
-	//if (StatusComponent->IsDie() && !MonsterData->DieMontage.IsEmpty())
-	//{
-	//	if (Controller)
-	//	{
-	//		Controller->Destroy();
-	//	}
-	//	SetActorEnableCollision(false);
-
-	//	const int64 Index = FMath::RandRange(0, MonsterData->DieMontage.Num() - 1);
-	//	CurrentDieMontage = MonsterData->DieMontage[Index];
-
-	//	AnimInstance->Montage_Play(CurrentDieMontage);
-	//	UKismetSystemLibrary::K2_SetTimer(this, TEXT("OnDie"),
-	//		MonsterData->DieMontage[Index]->GetPlayLength() - 0.5f, false);
-	//}
-	//else if (!StatusComponent->IsDie() && !MonsterData->HitReactMontage.IsEmpty())
-	//{
-	//	const int64 HitReactIndex = FMath::RandRange(0, MonsterData->HitReactMontage.Num() - 1);
-	//	AnimInstance->Montage_Play(MonsterData->HitReactMontage[HitReactIndex]);
-	//}
-	return 0.0f;
 }
 
 void AMonsterBase::OnDie()
@@ -221,6 +207,7 @@ void AMonsterBase::OnDie()
 				if (CheckLeftTime < 0.3f)
 				{
 					DropItem(OwnStatData);
+					//BodySlash();
 					Destroy();
 				}
 				//bool bForcheck = true;
@@ -228,9 +215,77 @@ void AMonsterBase::OnDie()
 		}
 		else
 		{
+			//BodySlash();
 			Destroy();
+			
 		}
 	}
+}
+void AMonsterBase::BodySlash()
+{
+	//const USkeletalMeshSocket* RootSocket = SkeletalMeshComponent->GetSocketByName(SkeletalMeshComponent->GetBoneName(0));
+	//const int32 NumBones = SkeletalMeshComponent->GetNumBones();
+
+
+	//SkeletalMeshComponent->SetIsReplicated(true);
+	//SkeletalMeshComponent->SetSimulatePhysics(true);
+	//SkeletalMeshComponent->AddImpulseToAllBodiesBelow(FVector(0, 0, 200), NAME_None, true);
+	//SkeletalMeshComponent->SetCollisionProfileName(TEXT("Ragdoll"));
+
+	// 오체분시
+	//SkeletalMeshComponent->HideBoneByName(NAME_None, EPhysBodyOp::PBO_Term);
+	
+
+	// 실패
+	if (HasAuthority())
+	{
+
+		// physicsAsset 에 있는 뼈 이름 가지고 와서 해당 뼈들만 hideBonebyName 으로 제거한뒤 impulse 로 날려보내면 비슷하지 않을까?
+		//const UPhysicsAsset* PhysicsAsset = SkeletalMeshComponent->GetPhysicsAsset();
+		/* 임시 폭발 */
+		//SkeletalMeshComponent->SetIsReplicated(true);
+		//SkeletalMeshComponent->SetSimulatePhysics(true);
+		//SkeletalMeshComponent->SetCollisionProfileName(TEXT("Ragdoll"));
+		//SkeletalMeshComponent->HideBoneByName(NAME_None, EPhysBodyOp::PBO_Term);
+		//SkeletalMeshComponent->AddImpulseToAllBodiesBelow(FVector(0, 0, 1000), NAME_None, true);
+
+		// 이러면 몸통 하나만 남고 나머지는 사라짐..
+		// 그렇다면 반대로 몸통 하나만 사라지게 하는 방법은?
+		// 얘는 일단 몸통 하나만이고..
+		//for (const USkeletalBodySetup* SlashBodySetup : PhysicsAsset->SkeletalBodySetups)
+		//{
+		//	//Spine03 만 남음
+		//	if (SlashBodySetup)
+		//	{
+		//		const FName BoneName = SlashBodySetup->BoneName;
+		//		SkeletalMeshComponent->BreakConstraint(FVector::ZeroVector, FVector::ZeroVector, BoneName);
+		//		SkeletalMeshComponent->HideBoneByName(BoneName, EPhysBodyOp::PBO_Term);
+		//	}
+		//	// Spine03 빼고 남겨야됌...
+		//	if (SlashBodySetup)
+		//	{
+		//		const FName BoneName = SlashBodySetup->BoneName;
+		//		// Root 본만 골라서 처리
+		//		if (BoneName == SkeletalMeshComponent->GetBoneName(0)) // 또는 "pelvis", "root" 등 명시적 이름
+		//		{
+		//			SkeletalMeshComponent->BreakConstraint(FVector::ZeroVector, FVector::ZeroVector, BoneName);
+		//			SkeletalMeshComponent->HideBoneByName(BoneName, EPhysBodyOp::PBO_Term);
+		//		}
+		//	}
+		//}
+
+
+
+
+		FTimerHandle SplashHandle;
+		GetWorld()->GetTimerManager().SetTimer(SplashHandle, FTimerDelegate::CreateLambda([this]()
+			{
+				Destroy();
+			}), 3.0f, false);
+
+	}
+
+
 }
 
 void AMonsterBase::DropItem(const FDataTableRowHandle& InDataTableRowHandle)
@@ -337,6 +392,11 @@ void AMonsterBase::Tick(float DeltaTime)
 		{
 			OnHealthDepleted();
 		}
+		else
+		{
+			TakeDamageStun(m_fHealth, DamageMontage,1.f);
+		}
+
 		bool check = false;
 	}
 

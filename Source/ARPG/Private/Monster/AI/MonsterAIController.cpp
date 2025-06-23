@@ -300,6 +300,12 @@ void AMonsterAIController::UseSkill()
 		else if (PlayerDistance > SkillDistance)
 		{
 			Blackboard->SetValueAsBool(TEXT("CanUseSkill"), false);
+			FTimerHandle SkillChangeHandle;
+			GetWorld()->GetTimerManager().SetTimer(SkillChangeHandle, FTimerDelegate::CreateLambda([this]()
+				{
+					Blackboard->SetValueAsBool(TEXT("SelectedSkill"), false);
+				}), 4.0f, false);
+
 		}
 
 

@@ -22,6 +22,8 @@ public:
 	UFUNCTION()
 	void OnMontageFinished();
 
+	void IgnoreDamage(FGameplayTag GameplayTag, int Count);
+
 	virtual void SetSuplexMontage(UAnimMontage* InAnimMontage) { SuplexingMontage = InAnimMontage; }
 	UPROPERTY(EditDefaultsOnly)
 	UAnimMontage* SuplexingMontage;

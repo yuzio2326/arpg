@@ -11,6 +11,8 @@
 #include "NACharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "NavigationSystem.h"
+#include "Monster/Pawn/MonsterBase.h"
+#include "Ability/AttributeSet/NAAttributeSet.h"
 
 
 void UNAAnimNotifyState_QuickDash::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
@@ -152,27 +154,55 @@ void UNAAnimNotifyState_QuickDash::NotifyTick(USkeletalMeshComponent* MeshComp, 
 					}
 
 
+
 					for (const FOverlapResult& OverlapResult : OverlapResults)
 					{
+						if (AMonsterBase* OwnerMonster = Cast<AMonsterBase>(MeshComp->GetOwner()))
+						{
+							//Monster가 Monster에게 데미지를 입히려고 하면
+							if(AMonsterBase* TargetMonster = Cast<AMonsterBase>(OverlapResult.GetActor()))
+							{
+								//데미지를 주지 않고 이미 준걸로 처리
+								AppliedActors.Add(OverlapResult.GetActor());
+							}
+						}
 						if (const TScriptInterface<IAbilitySystemInterface>& TargetInterface = OverlapResult.GetActor())
 						{
 							if (!AppliedActors.Contains(OverlapResult.GetActor()))
 							{
+								// 대상이 Suplex 중이면
+								FGameplayTag SuplexTag = FGameplayTag::RequestGameplayTag("Player.Status.Suplex");
 
-								SourceInterface->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget
-								(
-									*SpecHandle.Data.Get(),
-									TargetInterface->GetAbilitySystemComponent()
-								);
-								// player 확인후 날리기
-								if (ANACharacter* Player = Cast<ANACharacter>(OverlapResult.GetActor()))
+								if (TargetInterface->GetAbilitySystemComponent()->HasMatchingGameplayTag(SuplexTag))
 								{
-									FVector ForwardVec = MeshComp->GetOwner()->GetActorForwardVector();
-									FVector LaunchVelocity = ForwardVec * LaunchForce;
-									LaunchVelocity.Z = 1200;
-									Player->LaunchCharacter(LaunchVelocity, true, true);
+									//데미지를 주지 않고 이미 준걸로 처리
+									AppliedActors.Add(OverlapResult.GetActor());
 								}
-								AppliedActors.Add(OverlapResult.GetActor());
+								else
+								{
+									// Item쪽에서 충돌해서 handle 날라가던거 해결
+									if (float HP = Cast<UNAAttributeSet>(SourceInterface->GetAbilitySystemComponent()->GetAttributeSet(UNAAttributeSet::StaticClass()))->GetHealth())
+									{
+										SourceInterface->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget
+										(
+											*SpecHandle.Data.Get(),
+											TargetInterface->GetAbilitySystemComponent()
+										);
+										// player 확인후 날리기
+										if (ANACharacter* Player = Cast<ANACharacter>(OverlapResult.GetActor()))
+										{
+											FVector ForwardVec = MeshComp->GetOwner()->GetActorForwardVector();
+											FVector LaunchVelocity = ForwardVec * LaunchForce;
+											LaunchVelocity.Z = 1200;
+											Player->LaunchCharacter(LaunchVelocity, true, true);
+										}
+										AppliedActors.Add(OverlapResult.GetActor());
+									}
+
+								
+								}
+
+
 							}
 						}
 					}
